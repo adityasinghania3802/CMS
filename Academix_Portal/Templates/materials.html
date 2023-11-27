@@ -1,0 +1,171 @@
+{% extends 'navbar.html' %}
+{% load static %}
+
+{% block head %}
+
+<link rel="stylesheet" href="{% static 'css/announcements.css' %}">
+<style>
+  .list-group {
+        display: contents;
+      }
+  .button-5 {
+    align-items: center;
+    background-clip: padding-box;
+    background-color: #9e9ece;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+    box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
+    box-sizing: border-box;
+    color: black;
+    cursor: pointer;
+    display: inline-flex;
+    font-family: system-ui,-apple-system,system-ui,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    justify-content: center;
+    line-height: 1.25;
+    margin: 0;
+    min-height: 3rem;
+    padding: calc(.875rem - 1px) calc(1.5rem - 1px);
+    position: relative;
+    text-decoration: none;
+    transition: all 250ms;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    vertical-align: baseline;
+    width: auto;
+  }
+  
+  .button-5:hover,
+  .button-5:focus {
+    box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
+  }
+  
+  .button-5:hover {
+    background-color: #cc0000; 
+    transform: translateY(-1px);
+  }
+  
+  .button-5:active {
+    background-color: rgb(109, 109, 255);
+    box-shadow: rgba(0, 0, 0, .06) 0 2px 4px;
+    transform: translateY(0);
+  }
+
+
+  .button-3 {
+    align-items: center;
+    background-clip: padding-box;
+    background-color: #9e9ece;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+    box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
+    box-sizing: border-box;
+    color: black;
+    cursor: pointer;
+    display: inline-flex;
+    font-family: system-ui,-apple-system,system-ui,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    justify-content: center;
+    line-height: 1.25;
+    margin: 0;
+    min-height: 2rem;
+    padding: calc(.5rem - 1px) calc(1rem - 1px);
+    position: relative;
+    text-decoration: none;
+    transition: all 250ms;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    vertical-align: baseline;
+    width: auto;
+  }
+  
+  .button-3:hover,
+  .button-3:focus {
+    box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
+  }
+  
+  .button-3:hover {
+    background-color: #777799;  
+    transform: translateY(-1px);
+  }
+  
+  .button-3:active {
+    background-color: rgb(109, 109, 255);
+    box-shadow: rgba(0, 0, 0, .06) 0 2px 4px;
+    transform: translateY(0);
+  }
+
+
+  body{
+    background-image: url("/static/images/img_03.jpg");
+    background-size: cover;
+  }
+  .ww {
+  box-shadow: 5px;
+
+}
+.ww:hover{
+  box-shadow: 5px 5px 10px ;
+}
+  </style>
+{% endblock %}
+
+{% block body %}
+  <div class="list-group container-fluid">
+    <div class="col-12">
+      {% if isprof %}
+  <div style="padding-top:25px; padding-left:25px;"><a href="/mycourse/{{ course.course_code }}/addmaterial"><button class="button-3 text-white" role="button" style="background-color: #004574">Add Material &nbsp;
+    <i class="fa-regular fa-square-plus fa-lg "></i>  </button></a></div>
+    {% endif %}
+      {% if messages %}
+{% for msg in messages %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+  <strong>{{ msg }}</strong>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endif %}
+    {% for x in material %}
+    <div class="m-3 p-2" style="border-radius: 8px; opacity: 0.9;">
+      
+      <div class="list-group-item list-group-item-action ww">
+      <div class="d-flex w-100 justify-content-between">
+        <h5 class="mb-1" style="color:black"><i class="fa-regular fa-file fa-lg" style="padding-right: 10px;"></i>{{x.title}}</h5>
+        <small>{{x.timestamp}}</small>
+      </div>
+      <hr class="border">
+      {% if isprof %}
+      <button role="button" class="button-3 text-white" style="float:right; background-color: #004574;">Remove &nbsp;<i class="fa-regular fa-trash-can fa-lg"></i>
+      </button>
+      {% endif %}
+      <div>
+      <p class="mb-1" style="color:black">{{x.description}}</p>
+      <p class="mb-1"><b><a href="https://cms-it314-bucket.s3.ap-south-1.amazonaws.com/{{x.material_file}}" style="color: #004574;">Material</a></b></p>
+      </div>
+    </div>
+    </div>
+    {% endfor %}
+  </div>
+    
+  </div>
+
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
+    crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+    integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+  {% endblock %}

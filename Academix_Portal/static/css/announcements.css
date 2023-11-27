@@ -1,0 +1,40 @@
+.nav{
+    background-color: #008adf;
+}
+
+form {
+  min-width:300px;
+  max-width:400px;
+  padding:25px;
+  margin:0 auto;
+  background:#efefef;
+  border: solid 1px;
+  border-color: grey;
+
+}
+
+form input {
+  border:1px solid #eee;
+  padding:5px 8px;
+  color:#444;
+}
+
+form button {
+  color:#555;
+  background:#ffffffad;
+  margin-top:20px;
+}
+
+form button:hover {
+  cursor: pointer;
+  background:rgb(109, 109, 255) !important;
+}
+
+.pull-right {
+  float:right;
+}
+
+.container-fluid{
+  padding: 25px;
+}
+

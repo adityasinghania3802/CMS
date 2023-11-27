@@ -1,0 +1,144 @@
+{% extends 'navbar.html' %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/student_list.css' %}">
+<style>
+  .list-group {
+        display: contents;
+      }
+  .button-5 {
+    align-items: center;
+    background-clip: padding-box;
+    background-color: #cccc00;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+    box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
+    box-sizing: border-box;
+    color: black;
+    cursor: pointer;
+    display: inline-flex;
+    font-family: system-ui,-apple-system,system-ui,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    justify-content: center;
+    line-height: 1.25;
+    margin: 0;
+    min-height: 3rem;
+    padding: calc(.875rem - 1px) calc(1.5rem - 1px);
+    position: relative;
+    text-decoration: none;
+    transition: all 250ms;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    vertical-align: baseline;
+    width: auto;
+  }
+  
+  .button-5:hover,
+  .button-5:focus {
+    box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
+  }
+  
+  .button-5:hover {
+    background-color: #999900;  
+    transform: translateY(-1px);
+  }
+  
+  .button-5:active {
+    background-color: rgb(109, 109, 255);
+    box-shadow: rgba(0, 0, 0, .06) 0 2px 4px;
+    transform: translateY(0);
+  }
+
+  .button-3 {
+    align-items: center;
+    background-clip: padding-box;
+    background-color: #cccc00;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+    box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
+    box-sizing: border-box;
+    color: black;
+    cursor: pointer;
+    display: inline-flex;
+    font-family: system-ui,-apple-system,system-ui,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    justify-content: center;
+    line-height: 1.25;
+    margin: 0;
+    min-height: 2rem;
+    padding: calc(.5rem - 1px) calc(1rem - 1px);
+    position: relative;
+    text-decoration: none;
+    transition: all 250ms;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    vertical-align: baseline;
+    width: auto;
+  }
+  
+  .button-3:hover,
+  .button-3:focus {
+    box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
+  }
+  
+  .button-3:hover {
+    background-color: #999900;  
+    transform: translateY(-1px);
+  }
+  
+  .button-3:active {
+    background-color: rgb(109, 109, 255);
+    box-shadow: rgba(0, 0, 0, .06) 0 2px 4px;
+    transform: translateY(0);
+  }
+
+  body{
+    background-image: url("/static/images/img_03.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed; 
+  }
+  .ww {
+  box-shadow: 5px;
+
+}
+.ww:hover{
+  box-shadow: 5px 5px 10px;
+}
+</style>
+{% endblock %} 
+
+{% block search %}
+  <form class="form-inline my-2 my-lg-0" action="/mycourse/{{course.course_code}}/studentlist/search" method="POST">
+    {% csrf_token %}
+    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" name="Search">
+    <button class="btn btn-outline-success my-2 my-sm-0" type="submit" style="color: black; border-color: white; background-color: white;">Search</button>
+  </form>
+{% endblock %}
+
+{% block body %}
+
+<ol class="list-group container-fluid list-group-flush">
+  {% for student in students %}
+  <div class="m-3 p-2" style="border-radius: 8px; opacity: 0.9;">
+  <li class="list-group-item ww">
+    <div class="row ">
+    <div class="ms-2 me-auto col-sm-9 col-12">
+      <div class="fw"><b>{{student.first_name}} {{student.last_name}}</b></div>
+      {{ student.user.email}}
+    </div>
+    <div class="col-sm-3 col-12 d-flex justify-content-end"><span><a href="/mycourse/{{course.course_code}}/studentlist/{{student.id}}/viewprofile" style="color: white;"><button role="button" class="button-3 text-white" style=" background-color: #004574;">View Profile<i class="fa-regular fa-address-card fa-lg" style="padding-left: 15px;"></i></button></a></span>
+    </div>
+    </div>
+  </li>
+  </div>
+  {% endfor %}
+</ol>
+
+
+{% endblock %}
