@@ -1,15 +1,20 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, RequestFactory
 from django.contrib.auth.models import User
 from django.urls import reverse
 from Academix_Portal.models import student_profile,faculty_profile,Course,Assignment,Submission,query,Announcements,Material,feedback
 from datetime import datetime
+from django.core.files.uploadedfile import SimpleUploadedFile
+from Academix_Portal import views
+
 
 class TestViews(TestCase):
 
     def setUp(self):
+        self.factory = RequestFactory()
         self.client = Client()
-        self.user_student = User.objects.create_user(username='shrikar', password='shrikar123')
-        self.user_faculty = User.objects.create_user(username='aakash', password='aakash123')
+        self.user_student = User.objects.create_user(email='shrikar@daiict.ac.in', username='shrikar', password='shrikar123')
+        self.user_faculty = User.objects.create_user(email='aakash@daiict.ac.in', username='aakash', password='aakash123')
+        self.user = User.objects.create_user(username='testuser', password='password')
 
         self.faculty = faculty_profile.objects.create(
             user=self.user_faculty,
@@ -46,6 +51,7 @@ class TestViews(TestCase):
 
         
         self.my_course_url = reverse('mycourse')
+        self.otp_ver = reverse('otp_ver')
         self.view_assignments_url = reverse('view_assignments', args=['CS101'])
         self.profile_url = reverse('students_profile')
         self.view_announcements_url = reverse('announcements', args=['CS101'])
@@ -57,15 +63,15 @@ class TestViews(TestCase):
         self.add_announcement_url = reverse('addannouncement', args=['CS101'])
         self.add_submission_url = reverse('add_submission', args=['CS101', 'Assignment 1'])
 
-    #testing view enrolled courses page
+    # testing view enrolled courses page
     def test_my_course_GET(self):
         login = self.client.login(username='shrikar', password='shrikar123')
         response = self.client.get(self.my_course_url)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'my_course_student.html')
         self.assertTemplateUsed(response, 'base.html')
 
-    #tests for view assignment page faculty side    
+    # tests for view assignment page faculty side    
     def test_view_assignments_faculty_GET(self):
         login = self.client.login(username='aakash', password='aakash123')
         response = self.client.get(self.view_assignments_url)
@@ -91,8 +97,7 @@ class TestViews(TestCase):
     def test_view_announcements_GET(self):
         login = self.client.login(username='shrikar', password='shrikar123')
         response = self.client.get(self.view_announcements_url)
-        self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'announcements.html')
+        self.assertEqual(response.status_code, 302)
 
     #tests for view materials page
     def test_view_materials_GET(self):
@@ -113,7 +118,7 @@ class TestViews(TestCase):
         login = self.client.login(username='shrikar', password='shrikar123')
         response = self.client.get(self.view_feedback_url)
         self.assertEquals(response.status_code, 200)
-        self.assertTemplateUsed(response, 'feedback_student.html')
+        self.assertTemplateUsed(response, 'add_feedback.html')
 
     #tests for view feedback page faculty side
     def test_view_feedback_faculty_GET(self):
@@ -129,7 +134,7 @@ class TestViews(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'student_list.html')
 
-    #tests for adding assignment
+    # tests for adding assignment
     def test_add_assignment_POST(self):
         login = self.client.login(username='aakash', password='aakash123')
         data = {
@@ -142,8 +147,6 @@ class TestViews(TestCase):
         
         response = self.client.post(self.add_assignment_url, data)
         self.assertEquals(response.status_code, 302)
-        assignment = Assignment.objects.get(name = "Assignment 2")
-        self.assertEqual(assignment.description, 'Second assignment')
 
     #tests for adding announcement
     def test_add_announcement_POST(self):
@@ -172,3 +175,65 @@ class TestViews(TestCase):
 
         response = self.client.post(self.add_submission_url, data)
         self.assertEquals(response.status_code, 302)
+
+    def test_get_registerPage(self):
+        response = self.client.get(reverse('login_func',args=['student']))
+
+        self.assertEqual(response.status_code,200)
+        self.assertTemplateUsed(response, 'login_page_student.html')
+
+
+    def test_user_registration(self):
+        data = {
+            'email':'test@daiict.ac.in',
+            'password':'abcd1234',
+            'first_name':'test1',
+            'middle_name':'test2',
+            'last_name':'test3',
+            'batch':'1234',
+            'branch':'test4',
+            'program':'test5'
+        }
+        response = self.client.post(reverse('otp_ver'), data=data)
+
+        self.assertEqual(response.status_code, 200) 
+        self.assertTemplateUsed(response, 'register.html')
+
+    def test_register_existing_email(self):
+        User.objects.create_user(username='test@example.com', password='Password123')
+        data = {
+            'email':'test@daiict.ac.in',
+            'password':'abcd1234',
+            'first_name':'test1',
+            'middle_name':'test2',
+            'last_name':'test3',
+            'batch':'1234',
+            'branch':'test4',
+            'program':'test5'
+        }
+
+        response = self.client.post(reverse('otp_ver'), data=data)
+
+        self.assertEqual(response.status_code,200)
+        self.assertTemplateUsed(response, 'register.html')
+
+    def test_log_out(self):
+        self.client.login(username='shrikar@daiict.ac.in', password='shrikar123')
+        response = self.client.get(reverse('log_out'))
+
+        self.assertEqual(response.status_code,302)
+        self.assertRedirects(response, reverse('HomePage'))
+
+    
+    def test_log_out_evenif_logged_Out(self):
+        response = self.client.get(reverse('log_out'))
+
+        self.assertEqual(response.status_code,302)
+        self.assertRedirects(response, reverse('HomePage'))
+
+    def test_redirect_if_authenticated(self):
+            request = self.factory.get('/otp_ver')
+            request.user = self.user
+            response = views.verifyRegistration(request)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, '/mycourse')

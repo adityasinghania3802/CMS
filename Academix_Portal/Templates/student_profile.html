@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="static/css/course_dashboard_student.css"> 
 
 
+
 <style>
        
        
@@ -40,7 +41,7 @@
     top:0;
     width:4px;
     height:100%;
-    background-color: #ff0000;
+    background-color: #004574;
     transform:scaleY(0);
     transition:all 0.5s;
     transform-origin: bottom
@@ -63,7 +64,7 @@ body{
 .button-3 {
   align-items: center;
   background-clip: padding-box;
-  background-color: #ff0000;
+  background-color: #ff5555;
   border: 1px solid transparent;
   border-radius: .25rem;
   box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
@@ -97,6 +98,7 @@ body{
 .button-3:hover {
   background-color: #cc0000;  
   transform: translateY(-1px);
+  text-decoration: none;
 }
 
 .button-3:active {
@@ -113,7 +115,7 @@ body{
 
 }
 .ww:hover{
-  box-shadow: 5px 5px 10px #4b6d78;;
+  box-shadow: 5px 5px 10px #4b6d78;
 }
 
 
@@ -133,7 +135,7 @@ body{
               
               <div class="text-center mt-3">
                   <span class="p-1  rounded" style="font-size: 2.5rem; color: black; font-family: 'Nunito';"><b>Student</b></span>
-                  <div class="mt-2 mb-0" style="padding-top: 10px; font-size: 1.5rem; font-family: 'Nunito';"><b>Name: </b>{{student.first_name}} {{student.middle_name}} {{student.last_name}}</div>
+                  <div class="mt-2" style="padding-top: 10px; font-size: 1.5rem; font-family: 'Nunito';"><b>Name: </b>{{student.first_name}} {{student.middle_name}} {{student.last_name}}</div>
 
                   <div style="padding-top: 20px; font-size: 1.5rem; font-family: 'Nunito';">
                     <div><b>Email: </b>{{student.user.email}}</div>
@@ -152,7 +154,7 @@ body{
                   </div>
                   
                   <br>
-                  <a href="student_profile/change"><button class="button-3 mx-auto" class="mx-auto" style="color: black; text-decoration: none;">Update Profile</button></a>
+                  <a href="student_profile/change" style="text-decoration: none;" class="p-0 m-0"><button class="button-3 mx-auto d-flex" style="color: black; text-decoration: none;">Update Profile</button></a>
               </div>
           </div>
       </div>

@@ -109,7 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -125,6 +125,8 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "Academix_Portal/static"),
 )
 
+# STATIC_URL = '/static/'
+# STATIC_ROOT = '/home/academixportal/course_management_system/static'
 
 
 # Default primary key field type

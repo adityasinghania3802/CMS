@@ -6,22 +6,6 @@ from Academix_Portal.models import Assignment,Submission,query
 from django.db.utils import IntegrityError
 from datetime import datetime
 
-## Notes for people involved in testing ##
-
-"""
-1. class name should start with 'Test'.
-2. testing function name should start with 'test_'
-3. instance creation name should always be SetUp
-4. if you are creating any files under tests folder, make sure the filename is starting with test as django looks for test under test folder
-
-5. for running test use python manage.py test Academix_Portal
-6. Save the console output in textfile. few sample test case are provided 3 of them are true and one is wrong
-   in line 82. 1 != 2 since in line 80, i have added only 1 course i.e Computer Science 101 to faculty aakash.
-   (you can read console output sample in model_test.txt)
-
-"""
-
-
 from django.test import TestCase
 from django.contrib.auth.models import User
 from Academix_Portal.models import student_profile, faculty_profile, Course
@@ -75,18 +59,18 @@ class TestModels(TestCase):
         )
 
     def test_duplicate_usernames(self):
-        # Test for uniqueness of usernames
+        # Testing for uniqueness of usernames
         user_duplicate = User(username='shrikar', password='testpassword')
         with self.assertRaises(Exception):
             user_duplicate.save()
 
     def test_student_enroll_in_course(self):
-        # Test if a student can enroll in a course
+        # Testing if a student can enroll in a course
         self.course.studentlist.add(self.student)
         self.assertEqual(self.course.studentlist.count(), 1)
 
     def test_course_with_no_faculty(self):
-        # Test creating a course without a faculty
+        # Testing create a course without a faculty
         
         with self.assertRaises(IntegrityError):
             course_no_faculty = Course.objects.create(
@@ -96,7 +80,7 @@ class TestModels(TestCase):
         )
 
     def test_course_without_students(self):
-        # Test creating a course without students
+        # Testing create a course without students
         course_empty = Course.objects.create(
             name='Empty Course',
             course_code='EC101',
@@ -137,16 +121,16 @@ class TestModels(TestCase):
 
 
     def test_assignment_str_method(self):
-        # Test the __str__ method of Assignment
+        # Testing the __str__ method of Assignment
         self.assertEqual(str(self.assignment), 'Assignment 1')
 
     def test_submission_str_method(self):
-        # Test the __str__ method of Submission
+        # Testing the __str__ method of Submission
         expected_str = f'{self.assignment.assignment_course.course_code} shrikarpadaliya'
         self.assertEqual(str(self.submission), expected_str)
 
     def test_submission_defaults(self):
-        # Test submission default values
+        # Testing submission default values
         # Create a new assignment to avoid unique constraint violation
         new_assignment = Assignment.objects.create(
             name='Assignment 2',
@@ -174,11 +158,11 @@ class TestModels(TestCase):
         self.assertIsNotNone(submission_defaults.timestamp)  # Ensure timestamp is not None
 
     def test_assignment_due_date(self):
-        # Test assignment due date
+        # Testing assignment due date
         self.assertEqual(self.assignment.duedate, datetime(2023, 12, 1, 0, 0, 0))
 
     def test_submission_timestamp_auto_now_add(self):
-        # Test that the timestamp in Submission is set automatically on creation
+        # Testing that the timestamp in Submission is set automatically on creation
         new_assignment = Assignment.objects.create(
             name='Assignment 2',
             description='Second assignment',

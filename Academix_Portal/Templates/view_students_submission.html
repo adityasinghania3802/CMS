@@ -8,6 +8,40 @@
 
 <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"> -->
 <style>
+  #id1 {
+  display: flex;
+  width: 100%;
+  justify-content: between;
+  padding-top: 10px;
+}
+
+#id1 h5 {
+  margin-bottom: 1rem;
+  color: black;
+  font-family: 'Nunito';
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+
+#id1 a {
+  color: rgb(0, 255, 30);
+}
+
+.button-3 {
+  background-color: #28A745;
+}
+
+@media screen and (max-width: 600px) {
+  #id1 {
+    flex-direction: column; 
+  }
+
+  #id1 h5,
+  #id1 a {
+    /* margin-bottom: 0.5rem;  */
+    padding-top: 10px;
+  }
+}
   .button-5 {
     align-items: center;
     background-clip: padding-box;
@@ -161,32 +195,29 @@
 </div> -->
 
 
-
-
-
-
-
-
-
 <div class="list-group container-fluid">
   <div class="col-12">
   {% for s in submission %}
   <div class="m-3 p-2" style="border-radius: 8px; opacity: 0.9;">
     <div class="list-group-item list-group-item-action ww" >
       
-    <div class="d-flex w-100 justify-content-between" style="padding-top: 10px;">
+    <div id="id1" class="d-flex w-100 justify-content-between" style="padding-top: 10px;">
       <h5 class="mb-1" style="color:black; font-family:'Nunito'; font-weight: 700; font-size: 1.4rem;"><i class="fa-regular fa-file-lines fa-lg" style="padding-right:10px ;"></i> {{s.student.first_name}} {{s.student.last_name}}'s Submission</h5>
-      <h6 class="mb-1"><b>Submission Link: </b><a href="https://cms-it314-bucket.s3.ap-south-1.amazonaws.com/{{s.work}}" style="color: #004574;">Link</a></small>
+      <!-- <h6 class="mb-1"><b>Submission: </b> -->
+        <a href="https://cms-it314-bucket.s3.ap-south-1.amazonaws.com/{{s.work}}" style="color: rgb(0, 255, 30);"><button role="button" class="button-3 text-white" style=" background-color: #28A745;">Submission<i class="fa-solid fa-lg fa-book-open" style="padding-left: 10px;"></i></button></a></small>
     </div>
     <hr class="border">
+    <h6 id="id1" style="display: none; color: red;">Please enter a valid grade</h6>
+    <p class="mb-1" style="padding-top: 10px; color: black;"><b>Max Grade: </b>{{assignment.max_grade}}</p>
     <p class="mb-1" style="padding-top: 10px; color: black;"><b>Status: </b>{{s.feedback}}</p>
     {% if s.graded %}
       <p class="mb-1" style="padding-top: 5px; color: black;"><b>Grade Obtained: </b>{{s.grade}}</p>
-      <form action="/mycourse/{{course.course_code}}/{{assignment.name}}/viewstudentssubmission/{{s.id}}/grade" method="post">
+      <form action="/mycourse/{{course.course_code}}/{{assignment.name}}/viewstudentssubmission/{{s.id}}/grade" method="post" onsubmit="return check1(this)">
         {% csrf_token %}
         <label>
           <p class='mb-1' style="color: black; padding-top: 10px;"><b>Update Grade: </b></p></label>
-        <input type="number" id="grade" name="grade">
+        <input type="number" id="grade" name="grade" required>
+        <!-- <input type="hidden" name="max_grade" value="{{assignment.max_grade}}"> -->
         <div style="padding-top: 10px;">
           <button role="button" class="button-3 text-white" style=" background-color: #004574;">Update
             <i class="fa-solid fa-pen" style="float: right; padding-left: 15px;"></i>
@@ -195,11 +226,12 @@
       
       </form>
     {% else %}
-      <form action="/mycourse/{{course.course_code}}/{{assignment.name}}/viewstudentssubmission/{{s.id}}/grade" method="post">
+      <form action="/mycourse/{{course.course_code}}/{{assignment.name}}/viewstudentssubmission/{{s.id}}/grade" method="post" onsubmit="return check1(this)">
         {% csrf_token %}
         <label>
           <p class='mb-1' style="padding-top: 10px; color: black;"><b>Grade: </b></p></label>
-        <input type="number" id="grade" name="grade">
+        <input type="number" id="grade" name="grade" required>
+        <!-- <input type="hidden" name="max_grade" value="{{assignment.max_grade}}"> -->
         <div style="padding-top: 10px;">
           <button role="button" class="button-3 text-white" style=" background-color: #004574;">Grade
             <i class="fa-solid fa-plus fa-lg" style="float: right; padding-left: 15px;"></i>
@@ -216,6 +248,39 @@
   
 </div>
 
+<script>
+  function check1(form) {
+    // var max_grade = form.max_grade.value;
+    var max_grade = {{assignment.max_grade}};
+    if (form.grade.value > max_grade) {
+      document.getElementById("id1").style.display = "block";
+      return false;
+    }
+    else if (form.grade.value < 0) {
+      // alert("Grade cannot be negative");
+      document.getElementById("id1").style.display = "block";
+      return false;
+    }
+    else {
+      return true;
+    }
+  }
+  // function check2(form) {
+  //   const max_grade = form.max_grade.value;
+  //   if (form.grade.value > max_grade) {
+  //     document.getElementById("id1").style.display = "block";
+  //     return false;
+  //   }
+  //   else if (form.grade.value < 0) {
+  //     // alert("Grade cannot be negative");
+  //     document.getElementById("id1").style.display = "block";
+  //     return false;
+  //   }
+  //   else {
+  //     return true;
+  //   }
+  // }
+</script>
 
 
 {% endblock %}

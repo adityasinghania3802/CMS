@@ -5,9 +5,9 @@ from django.contrib.postgres.fields import ArrayField
 
 
 class student_profile(models.Model):
-    user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, null=True, blank=False, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=20, null=False)
-    middle_name = models.CharField(max_length=20)
+    middle_name = models.CharField(max_length=20, null = True, blank= True)
     last_name = models.CharField(max_length=20, null=False)
     batch = models.IntegerField(null=False)
     branch = models.CharField(max_length=50, null=False)
@@ -19,11 +19,10 @@ class student_profile(models.Model):
 
 
 class faculty_profile(models.Model):
-    user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE) 
+    user = models.OneToOneField(User, null=True, blank=False, on_delete=models.CASCADE) 
     first_name = models.CharField(max_length=20, null=False)
-    middle_name = models.CharField(max_length=20)
+    middle_name = models.CharField(max_length=20, null=True, blank=True)
     last_name = models.CharField(max_length=20, null=False)
-
     faculty_courses = models.ManyToManyField('Course', related_name='facultylist', blank=True)
 
     def __str__(self):
@@ -32,7 +31,7 @@ class faculty_profile(models.Model):
 class Course(models.Model):
     name = models.CharField(max_length=25, unique=True)
     course_code = models.CharField(max_length=25, unique=True)
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(max_length=30, blank=True, null=True)
     faculty = models.ForeignKey(faculty_profile, on_delete=models.CASCADE)
     studentlist = models.ManyToManyField('student_profile', related_name='course', blank=True)
 
@@ -41,7 +40,7 @@ class Course(models.Model):
     
 class Assignment(models.Model):
     name = models.CharField(max_length=30)
-    description = models.TextField(null=True, blank=True)
+    description = models.TextField(max_length=100, null=True, blank=True)
     duedate = models.DateTimeField()
     max_grade = models.IntegerField()
     attachment =models.FileField(upload_to='attachments')

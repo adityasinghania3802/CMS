@@ -45,7 +45,7 @@
   }
   
   .button-5:hover {
-    background-color: #cc0000;  
+    background-color: #e7e797;  
     transform: translateY(-1px);
   }
   
@@ -59,7 +59,7 @@
   .button-3 {
     align-items: center;
     background-clip: padding-box;
-    background-color: #d43b75;
+    background-color: #e7e797;
     border: 1px solid transparent;
     border-radius: .25rem;
     box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
@@ -91,7 +91,7 @@
   }
   
   .button-3:hover {
-    background-color: #c92865;  
+    background-color: #e7e797;  
     transform: translateY(-1px);
   }
   
@@ -136,14 +136,16 @@
     <div style="padding-top:25px; padding-left:25px;"><a href="{{ course.course_code }}/addannouncement"><button class="button-3 text-white" role="button" style="background-color: #004574">Add Announcements &nbsp;
       <i class="fa-regular fa-square-plus fa-lg"></i>  </button></a></div>
 {% endif %} 
+
 {% if messages %}
 {% for msg in messages %}
 <div class="alert alert-success alert-dismissible fade show" role="alert">
   <strong>{{ msg }}</strong>
-  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  {% comment %} <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> {% endcomment %}
 </div>
 {% endfor %}
 {% endif %}
+
     {% for x in announce %}
     <div class="m-3 p-2" style="border-radius: 8px; opacity: 0.9;">
       <div class="list-group-item list-group-item-action ww" >
@@ -154,11 +156,11 @@
       </div>
       <hr class="border">
       {% if isprof %}
-      <a href="{{ course.course_code }}/deleteannouncement/{{ x.id }}"><button role="button" class="button-3 text-white" style="float:right; background-color: #004574;">Remove &nbsp;<i class="fa-regular fa-trash-can fa-lg"></i>
+      <a href="{{ course.course_code }}/deleteannouncement/{{ x.id }}"><button role="button" class="button-3 text-white" style="float:right; background-color: red">Remove &nbsp;<i class="fa-regular fa-trash-can fa-lg"></i>
       </button></a>
       {% endif %}
       <div>
-      <p class="mb-1" style="color:black">{{x.description}}</p>
+      <p class="mb-1" style="color:black; font-family:'Nunito'; font-size: 1.1rem;">{{x.description}}</p>
       <small>{{x.user}}</small>
       </div>
       

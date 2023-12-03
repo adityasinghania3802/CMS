@@ -13,6 +13,7 @@ from django.template import loader
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
+
 from django.contrib import messages
 from django.db.models import Q
 
@@ -27,6 +28,7 @@ def home(request):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def students_profile(request):
     try:
         prof = faculty_profile.objects.get(user=request.user)
@@ -38,11 +40,17 @@ def students_profile(request):
         }
         return render(request , 'student_profile.html', context)
 
+@login_required(login_url='/')
 def materials(request,course_id):
+    
     try:
         isprof = True
         try:
+            thiscourse = Course.objects.get(course_code=course_id)
             prof = faculty_profile.objects.get(user=request.user)
+            if prof != thiscourse.faculty:
+                messages.error(request, "You cannot View this course Material.")
+                return redirect('/mycourse')
         except:
             isprof = False
         course = Course.objects.get(course_code=course_id)
@@ -56,9 +64,25 @@ def materials(request,course_id):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
+def deletematerial(request, course_id, id):
+    try:
+        student = student_profile.objects.get(user=request.user)
+        return redirect('/mycourse/'+course_id)
+    except:
+        prof = faculty_profile.objects.get(user=request.user)
+        course = Course.objects.get(course_code=course_id)
+        if course.faculty != prof:
+            return redirect('/mycourse/'+course_id)
+        mat = Material.objects.get(id=id)
+        mat.delete()
+        return redirect('/mycourse/'+course_id+'/materials')
+
+@login_required(login_url='/')
 def addmaterial(request,course_id):
     try:
         prof = faculty_profile.objects.get(user=request.user)
+        thiscourse = Course.objects.get(course_code=course_id,faculty=prof)
     except:
         messages.error(request, "You cannot Post Material here.")
         return redirect('/mycourse/'+course_id+'/materials')
@@ -77,13 +101,15 @@ def addmaterial(request,course_id):
         }
         return render(request , 'add_material.html', context)
 
+@login_required(login_url='/')
 def announcements(request , course_id):
-    thiscourse = Course.objects.get(course_code = course_id)
     
-
     isprof = True
     try:
+        thiscourse = Course.objects.get(course_code = course_id)
         prof = faculty_profile.objects.get(user=request.user)
+        if prof != thiscourse.faculty:
+            isprof = False
     except:
         isprof = False
     
@@ -106,13 +132,15 @@ def announcements(request , course_id):
     }
     return render(request , 'announcements.html', context)
 
+@login_required(login_url='/')
 def addannouncement(request,course_id):
     try:
         try:
             prof = faculty_profile.objects.get(user=request.user)
+            thiscourse = Course.objects.get(course_code=course_id,faculty=prof)
         except:
-            messages.error(request, "You cannot Post Material here.")
-            return redirect('/mycourse/'+course_id+'/materials')
+            messages.error(request, "You cannot Post Announcement here.")
+            return redirect('/mycourse/'+course_id)
         if request.method == "POST":
             title = request.POST.get('title')
             desc = request.POST.get('desc')
@@ -129,20 +157,26 @@ def addannouncement(request,course_id):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def fb_response(request, course_id):
     try:
         course = Course.objects.get(course_code=course_id)
         try:
             prof = faculty_profile.objects.get(user=request.user)
-            fb = feedback.objects.filter(course=course)
-            isprof = True
-            context = {
-                'prof':prof,
-                'feedback':fb,
-                'isprof':isprof,
-                'course':course
-            }
-            return render(request, 'feedback_faculty.html', context)
+            try:
+                thiscourse = Course.objects.get(course_code=course_id,faculty=prof)
+                fb = feedback.objects.filter(course=course)
+                isprof = True
+                context = {
+                    'prof':prof,
+                    'feedback':fb,
+                    'isprof':isprof,
+                    'course':course
+                }
+                return render(request, 'feedback_faculty.html', context)
+            except:
+                messages.error(request, "You cannot view the Feedback form for this course")
+                return redirect('/mycourse/'+course_id)
         except:
             try:
                 fb = feedback.objects.get(user=request.user, course=course)
@@ -161,6 +195,7 @@ def fb_response(request, course_id):
                     return render(request , 'add_feedback.html',context)
     except:
         return redirect('/error')
+
 
 def login_func(request, loginid):
     try:
@@ -197,7 +232,7 @@ def login_func(request, loginid):
                 return render(request , 'login_page_admin.html')
     except:
         return redirect('/error')
-        
+   
 def register(request):
     try:
         if request.user.is_authenticated:
@@ -215,6 +250,7 @@ def register(request):
             code = random.randint(1000,9999)
             request.session['code'] = code
             request.session['password'] = password
+            request.session['email'] = email
             send_email_to_client(email, code)
             dict = {'email':email,'password':password,'first_name':first_name,'middle_name':middle_name,'last_name':last_name,'batch':batch,'branch':branch,'program':program }
             return render(request,'otp_ver.html',dict)
@@ -223,6 +259,7 @@ def register(request):
     except:
         return redirect('/error')
 
+
 def verifyRegistration(request):
     try:
         if request.user.is_authenticated:
@@ -230,7 +267,7 @@ def verifyRegistration(request):
 
         if request.method == "POST":
             code = request.session.get('code', None)
-            email = request.POST['email']
+            email = request.session.get('email', None)
             password = request.session.get('password', None)
             first_name = request.POST.get('first_name')
             middle_name = request.POST.get('middle_name')
@@ -240,10 +277,8 @@ def verifyRegistration(request):
             program = request.POST.get('program')
             code = str(code)
             ver_code = request.POST.get('ver_code')
-            print(email)
-            print(password)
             if User.objects.filter(email=email).exists():
-                messages.warning(request, "Enter correct Email")
+                messages.warning(request, "Account already exists")
                 return redirect('/register')
             if code == ver_code:
                 user = User.objects.create_user(username=email, email=email, password=password)
@@ -261,6 +296,7 @@ def verifyRegistration(request):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def addcourse(request):
     try:
         try:
@@ -281,10 +317,12 @@ def addcourse(request):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def edit_course(request, course_id):
     try:
         try:
             prof = faculty_profile.objects.get(user=request.user)
+            thiscourse = Course.objects.get(course_code=course_id,faculty=prof)
         except:
             messages.error(request, "You are not authorized to edit a Course")
             return redirect('/mycourse')
@@ -302,6 +340,7 @@ def edit_course(request, course_id):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def unenroll(request , course_id):
     try:
         student_user = request.user
@@ -318,11 +357,12 @@ def unenroll(request , course_id):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def deletecourse(request , course_id):
-
     try:
         try:
             prof = faculty_profile.objects.get(user=request.user)
+            course = Course.objects.get(course_code=course_id,faculty=prof)
         except:
             messages.error(request, "You are not authorized to delete a Course")
             return redirect('/mycourse')
@@ -335,14 +375,20 @@ def deletecourse(request , course_id):
             return redirect('/mycourse')
         
         return redirect('mycourse')
+    
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return redirect('/error')
 
+@login_required(login_url='/')
 def student_list(request , course_id):
     try:
         isprof = True
         try:
             prof = faculty_profile.objects.get(user=request.user)
+            current_course = Course.objects.get(course_code = course_id)
+            if current_course.faculty != prof:
+                messages.error(request, "You cannot view the stduent list.")
+                return redirect('/mycourse')
         except:
             isprof = False
         current_course = Course.objects.get(course_code = course_id)
@@ -357,6 +403,7 @@ def student_list(request , course_id):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def view_profile(request, course_id, id):
     try:
         student = student_profile.objects.get(id = id)
@@ -366,6 +413,7 @@ def view_profile(request, course_id, id):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def students_assignment(request , course_id , student):
     try:
         course = Course.objects.get(course_code=course_id)
@@ -386,13 +434,12 @@ def students_assignment(request , course_id , student):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def add_course_to_user(request, course_id):
     try:
         try:
             current_user = request.user
-            print(current_user)
             course = Course.objects.get(course_code = course_id)
-            print(course)
             if course.studentlist.filter(user = current_user).exists():
                 messages.error(request , 'User is already enrolled in this course')
                 return redirect('mycourse')
@@ -411,6 +458,7 @@ def add_course_to_user(request, course_id):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def coursedashboard(request):
     try:
         try:
@@ -418,7 +466,6 @@ def coursedashboard(request):
             current_user = request.user
             student = student_profile.objects.get(user = current_user)
             myenroll = student.student_courses.all()
-
             final = course.difference(myenroll)
             isprof = False
             context = {
@@ -430,8 +477,7 @@ def coursedashboard(request):
             course = Course.objects.all()
             current_user = request.user
             prof = faculty_profile.objects.get(user = current_user)
-            myenroll = Course.objects.filter(faculty=prof)
-
+            myenroll = Course.objects.filter(faculty=prof) 
             final = course.difference(myenroll)
             isprof = True
             context = {
@@ -443,15 +489,14 @@ def coursedashboard(request):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def mycourse(request):
     try:
         current_user = request.user
         isprof=False
         try:
             student = student_profile.objects.get(user = current_user)
-            # print(student)
             myenroll = student.student_courses.all()
-            # print((myenroll))
             context = {
                 'enrolled': myenroll,
                 'student':student,
@@ -470,6 +515,8 @@ def mycourse(request):
     except:
         return redirect('/error')
 
+
+@login_required(login_url='/')
 def createassignment(request, course_id):
     try:
         params = {
@@ -479,12 +526,15 @@ def createassignment(request, course_id):
     except:
         return redirect('/error')
 
+
+@login_required(login_url='/')
 def add_assignment(request, course_id):
     try:
         user = request.user
-        prof = faculty_profile.objects.filter(user=user)
-        if prof is None:
-            messages.error(request,"You cannot post an announcement")
+        prof = faculty_profile.objects.get(user=user)
+        thiscourse = Course.objects.get(course_code=course_id)
+        if prof is None or prof != thiscourse.faculty:
+            messages.error(request,"You cannot post an Assignment")
         else:
             course = Course.objects.get(course_code = course_id)
             if(request.method == 'POST' and request.FILES['attachment']):
@@ -501,12 +551,16 @@ def add_assignment(request, course_id):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def view_assignments(request,course_id):
+    course = Course.objects.get(course_code=course_id)
+    assign = Assignment.objects.filter(assignment_course=course)
     try:
-        prof = faculty_profile.objects.filter(user=request.user)
-        course = Course.objects.get(course_code=course_id)
-        assign = Assignment.objects.filter(assignment_course=course)
-        if prof.exists():
+        try:
+            prof = faculty_profile.objects.get(user=request.user)
+            if course.faculty != prof:
+                messages.error(request, "You cannot view the assignment")
+                return redirect('/mycourse')
             isprof=True
             param = {
                 'course':course,
@@ -514,7 +568,8 @@ def view_assignments(request,course_id):
                 'isprof':isprof
             }
             return render(request, 'view_assignments_faculty.html', param)
-        else:
+        except:
+            print("HII")
             student_prof = student_profile.objects.get(user=request.user)
             submit=[]
             for x in assign:
@@ -531,21 +586,22 @@ def view_assignments(request,course_id):
         return redirect('/error')
         
 
+@login_required(login_url='/')
 def edit_assignment(request, course_id, name):
     try:
         try:
             prof = faculty_profile.objects.get(user=request.user)
+            thiscourse = Course.objects.get(course_code=course_id)
         except:
-            messages.error(request, "You are not authorized to add a Course")
+            messages.error(request, "You are not authorized to edit the assignment")
             return redirect('/mycourse/'+course_id+'/viewassignments')
-        if request.method == 'POST' and request.FILES['attachment']:
+        if request.method == 'POST':
             course = Course.objects.get(course_code = course_id)
             editassignment = Assignment.objects.get(assignment_course=course, name=name)
             editassignment.name = request.POST.get('name')
             editassignment.description = request.POST.get('description')
             editassignment.duedate = request.POST.get('duedate')
             editassignment.max_grade = request.POST.get('max_grade')
-            editassignment.attachment = request.FILES['attachment']
             editassignment.save()
         else:
             course = Course.objects.get(course_code = course_id)
@@ -556,24 +612,30 @@ def edit_assignment(request, course_id, name):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def delete_assignment(request , course_id , name):
     try:
-        course = Course.objects.get(course_code = course_id)
+        prof = faculty_profile.objects.get(user = request.user)
+        course = Course.objects.get(course_code = course_id, faculty=prof)
         Assignment.objects.filter(assignment_course = course , name = name).delete()
         view_assignments(request , course_id)
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def delete_announcement(request , course_id , ann_id):
     try:
+        prof = faculty_profile.objects.get(user = request.user)
+        course = Course.objects.get(course_code = course_id, faculty=prof)
         Announcements.objects.filter(id = ann_id).delete()
         announcements(request , course_id)
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
     except:
         return redirect('/error')
 
-   
+
+@login_required(login_url='/')
 def add_submission(request, course_id, name):
     try:
         student = student_profile.objects.get(user = request.user)
@@ -592,6 +654,7 @@ def add_submission(request, course_id, name):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def edit_submission(request, course_id, name):
     try:
         if(request.method == 'POST' and request.FILES['work']):
@@ -609,7 +672,8 @@ def edit_submission(request, course_id, name):
         return redirect('/mycourse/'+course_id+'/viewassignments')
     except:
         return redirect('/error')
-
+    
+@login_required(login_url='/')
 def view_students_submission(request,course_id, name):
     try:
         course = Course.objects.get(course_code=course_id)
@@ -621,6 +685,7 @@ def view_students_submission(request,course_id, name):
     except:
         return redirect('/error')
 
+@login_required(login_url='/')
 def grade_student_submission(request,course_id,name,sub_id):
     try:
         course = Course.objects.get(course_code=course_id)
@@ -638,19 +703,32 @@ def grade_student_submission(request,course_id,name,sub_id):
     except:
         return redirect('/error')
 
+
+@login_required(login_url='/')
 def view_query(request, course_id):
+    course = Course.objects.get(course_code=course_id)
+    Query = query.objects.filter(course = course)
     try:
-        course = Course.objects.get(course_code=course_id)
-        Query = query.objects.filter(course = course)
-        prof = faculty_profile.objects.filter(user=request.user)
-        isprof=False
-        if prof.exists():
-            isprof=True
+        prof = faculty_profile.objects.get(user=request.user)
+        if course.faculty != prof:
+            messages.error(request, "You cannot View this Course's Query.")
+            return redirect('/mycourse')
+        # if prof.exists():
+        isprof=True
         params = {'course' : course, 'Query' : Query, 'isprof' : isprof}
         return render(request, 'view_query.html', params)
     except:
-        return redirect('/error')
+        try:
+            student_user = student_profile.objects.get(user = request.user)
 
+            thiscourse = student_user.student_courses.get(course_code = course_id)
+            isprof = False
+            params = {'course' : course, 'Query' : Query, 'isprof' : isprof}
+            return render(request, 'view_query.html', params)
+        except:
+            return redirect('/error')
+
+@login_required(login_url='/')
 def add_query(request, course_id):
     try:
         course = Course.objects.get(course_code=course_id)
@@ -660,14 +738,13 @@ def add_query(request, course_id):
             qry = request.POST.get('qry')
             Query = query.objects.create(course=course, user = student, qry=qry)
             Query.save()
-            QueryList = query.objects.filter(course = course)
-            isprof = False
-            params2 = {'course' : course, 'Query' : QueryList, 'isprof' : isprof}
-            return render(request, 'view_query.html', params2)
+            return redirect('/mycourse/'+course_id+'/viewquery')
         return render(request, 'add_query.html', params)
     except:
         return redirect('/error')
 
+
+@login_required(login_url='/')
 def reply_query(request, course_id, qid):
     try:
         course = Course.objects.get(course_code=course_id)
@@ -687,6 +764,8 @@ def log_out(request):
     logout(request)
     return redirect('/')
 
+
+@login_required(login_url='/')
 def student_list_search(request,course_id):
     try:
         if request.method == "POST":
@@ -703,7 +782,8 @@ def student_list_search(request,course_id):
             return redirect('/mycourse/'+course_id+'/studentlist')
     except:
         return redirect('/error')
-    
+
+@login_required(login_url='/')  
 def mycourse_search(request):
     try:
         if request.method == "POST":
@@ -731,7 +811,8 @@ def mycourse_search(request):
             return redirect('/mycourse')
     except:
         return redirect('/error')
-    
+
+@login_required(login_url='/')  
 def coursedashboard_search(request):
     try:
         if request.method == "POST":
@@ -765,7 +846,8 @@ def coursedashboard_search(request):
             return redirect('/coursedashboard')
     except:
         return redirect('/error')
-    
+
+@login_required(login_url='/')   
 def update_profile(request):
     try:
         try:
