@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-fj$6knm-@nvm3z&&%7iwqj%2+&4%5*@ec8is79h^4jbgj!t!g)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['academixportal.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -58,7 +58,7 @@ ROOT_URLCONF = 'course_management_system.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'Templates'],
+        'DIRS': ['/home/academixportal/course_management_system/Academix_Portal/Templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -119,14 +119,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
-
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "Academix_Portal/static"),
-)
-
-# STATIC_URL = '/static/'
-# STATIC_ROOT = '/home/academixportal/course_management_system/static'
+STATIC_URL = '/static/'
+STATIC_ROOT = '/home/academixportal/course_management_system/static'
 
 
 # Default primary key field type
